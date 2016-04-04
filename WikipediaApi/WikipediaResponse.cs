@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-
 using Newtonsoft.Json;
 
 namespace WikipediaApi {
@@ -31,16 +30,16 @@ namespace WikipediaApi {
         public IList<Revision> Revisions { get; set; }
     }
 
-    public class Pages {
-        [JsonProperty(PropertyName = "14")]
-        public ArticleInfo ArtInfo { get; set; }
-    }
+    //public class Pages {
+    //    public Dictionary<int, ArticleInfo> ArtInfo { get; set; }
+    //}
 
     public class Query {
         [JsonProperty(PropertyName = "normalized")]
         public IList<Normalized> Normalized { get; set; }
         [JsonProperty(PropertyName = "pages")]
-        public Pages Pages { get; set; }
+        public Dictionary<object, object> Pages { get; set; }
+        public ArticleInfo ArticleInfo { get; set; }
     }
 
     public class RootObject {
