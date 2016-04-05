@@ -3,9 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-
 using Newtonsoft.Json;
-
 using WikipediaApi.Helpers;
 
 namespace WikipediaApi {
@@ -15,6 +13,9 @@ namespace WikipediaApi {
         ///     The names helper
         /// </summary>
         private static List<string> namesHelper = new List<string>();
+        /// <summary>
+        /// The result
+        /// </summary>
         private static RootObject result = new RootObject();
         /// <summary>
         ///     Gets or sets the word.

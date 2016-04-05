@@ -30,10 +30,6 @@ namespace WikipediaApi {
         public IList<Revision> Revisions { get; set; }
     }
 
-    //public class Pages {
-    //    public Dictionary<int, ArticleInfo> ArtInfo { get; set; }
-    //}
-
     public class Query {
         [JsonProperty(PropertyName = "normalized")]
         public IList<Normalized> Normalized { get; set; }
