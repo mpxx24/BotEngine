@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -87,8 +88,12 @@ namespace WikipediaApi {
             var articleJson = page.Value.ToString();
 
             var article = JsonConvert.DeserializeObject<ArticleInfo>(articleJson);
+            var content = article.Revisions[0].Content;
 
-            return article.Revisions[0].Content.Substring(0, 300);
+            var articleBegginingIndex = content.IndexOf("'''", StringComparison.Ordinal);
+            var articleEndingIndex = content.IndexOf("==");
+
+            return content.Substring(articleBegginingIndex, articleEndingIndex-articleBegginingIndex);
         }
     }
 
