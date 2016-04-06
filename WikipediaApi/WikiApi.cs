@@ -8,14 +8,13 @@ using Newtonsoft.Json;
 using WikipediaApi.Helpers;
 
 namespace WikipediaApi {
-
     public static class WikiApi {
         /// <summary>
         ///     The names helper
         /// </summary>
         private static List<string> namesHelper = new List<string>();
         /// <summary>
-        /// The result
+        ///     The result
         /// </summary>
         private static RootObject result = new RootObject();
         /// <summary>
@@ -25,13 +24,26 @@ namespace WikipediaApi {
         ///     The word.
         /// </value>
         private static string word { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the word.
+        /// </summary>
+        /// <value>
+        ///     The word.
+        /// </value>
+        public static string Word {
+            get { return word; }
+            set { word = value; }
+        }
+
         /// <summary>
         ///     Gets the URL.
         /// </summary>
         /// <value>
         ///     The URL.
         /// </value>
-        private static string url => string.Format("https://pl.wikipedia.org/w/api.php?action=query&titles={0}&prop=revisions&rvprop=content&format=json", word);
+        private static string url
+            => string.Format("https://pl.wikipedia.org/w/api.php?action=query&titles={0}&prop=revisions&rvprop=content&format=json",word);
 
         /// <summary>
         ///     Gets the response object.
@@ -87,14 +99,14 @@ namespace WikipediaApi {
             var page = pages.First();
             var articleJson = page.Value.ToString();
 
-            var article = JsonConvert.DeserializeObject<ArticleInfo>(articleJson);
-            var content = article.Revisions[0].Content;
+            var article = JsonConvert.DeserializeObject<ArticleInfo>(articleJson).Revisions[0].Content;
 
-            var articleBegginingIndex = content.IndexOf("'''", StringComparison.Ordinal);
-            var articleEndingIndex = content.IndexOf("==");
+            var articleBegginingIndex = article.IndexOf("'''", StringComparison.Ordinal);
+            var articleEndingIndex = article.IndexOf("==", StringComparison.Ordinal);
 
-            return content.Substring(articleBegginingIndex, articleEndingIndex-articleBegginingIndex);
+            var resultArticle = article.Substring(articleBegginingIndex, articleEndingIndex - articleBegginingIndex);
+
+            return WikiApiHelper.ClearAndPrepareArticle(resultArticle);
         }
     }
-
 }

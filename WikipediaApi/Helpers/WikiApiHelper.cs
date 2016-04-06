@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 
 namespace WikipediaApi.Helpers {
-
     public static class WikiApiHelper {
         /// <summary>
         ///     Prepares the word for searching.
@@ -26,24 +25,128 @@ namespace WikipediaApi.Helpers {
         ///     Clears the article.
         /// </summary>
         /// <returns>article without e.g. [[ ]] or <ref></ref> </returns>
-        public static string ClearArticle(string article) {
+        public static string ClearAndPrepareArticle(string article) {
             var result = RemoveRef(article);
+            result = RemoveSquareBracketsAndLines(result);
+            result = RemoveNbsp(result);
+            result = RemoveApostrophe(result);
+            result = RemoveDoubleCurlyBrackets(result);
+            result = AddArticleAdress(result);
 
             return result;
         }
 
         /// <summary>
-        ///     Removes the <ref></ref> from article and text between those tags.
+        ///     Removes the ref tags from article and text between those tags.
         /// </summary>
         /// <param name="article">The article.</param>
         /// <returns>article without <ref></ref> in it</returns>
         private static string RemoveRef(string article) {
-            var indexFrom = article.IndexOf("<ref>", StringComparison.Ordinal) + "<ref>".Length;
-            var indexTo = article.LastIndexOf("</ref>", StringComparison.Ordinal);
-            var res = article.Substring(indexFrom, indexTo - indexFrom);
+            if (article.Contains("<ref>") && article.Contains("</ref>")) {
+                var indexFrom = 0;
+                var indexTo = 0;
+                while (indexFrom != -1 && indexTo != -1 && indexTo < article.Length) {
+                    indexFrom = article.IndexOf("<ref>", indexFrom + "<ref>".Length, StringComparison.Ordinal);
+                    indexTo = article.IndexOf("</ref>", indexTo, StringComparison.Ordinal);
+                    var res = indexFrom != -1 && indexTo != -1
+                        ? article.Substring(indexFrom, indexTo - indexFrom)
+                        : string.Empty;
 
-            return article.Replace(res, "").Replace("<ref>", string.Empty).Replace("</ref>", string.Empty);
+                    if (!string.IsNullOrEmpty(res)) {
+                        article = article.Replace(res, "");
+                    }
+                }
+
+                return article.Replace("<ref>", string.Empty).Replace("</ref>", string.Empty);
+            }
+
+            return article;
+        }
+
+        /// <summary>
+        ///     Removes [[ | ]] from the article and text between [[ |
+        /// </summary>
+        /// <param name="article">The article.</param>
+        /// <returns>article without [[ | ]]</returns>
+        private static string RemoveSquareBracketsAndLines(string article) {
+            if (article.Contains("[[") && article.Contains("]]")) {
+                var indexFrom = 0;
+                var indexToLine = 0;
+                var indexToSquareBrackets = 0;
+
+                while (indexFrom != -1 && indexToLine < article.Length && indexToSquareBrackets < article.Length) {
+                    indexFrom = article.IndexOf("[[", indexFrom == -1 ? 0 : indexFrom + "[[".Length,
+                        StringComparison.Ordinal);
+                    indexToLine = article.IndexOf("|", indexFrom == -1 ? 0 : indexFrom, StringComparison.Ordinal);
+                    indexToSquareBrackets = article.IndexOf("]]", indexFrom == -1 ? 0 : indexFrom,
+                        StringComparison.Ordinal);
+
+                    var res = indexToLine < indexToSquareBrackets && (indexToLine - indexFrom) > 0 && indexFrom != -1
+                        ? article.Substring(indexFrom, indexToLine - indexFrom)
+                        : string.Empty;
+
+                    if (!string.IsNullOrEmpty(res)) {
+                        article = article.Replace(res, "");
+                    }
+                }
+
+                return article.Replace("[[", string.Empty).Replace("|", string.Empty).Replace("]]", string.Empty);
+            }
+
+            return article;
+        }
+
+        /// <summary>
+        ///     Removes nbsp from article
+        /// </summary>
+        /// <param name="article"></param>
+        /// <returns>article without nbsp</returns>
+        private static string RemoveNbsp(string article) {
+            return article.Replace("&nbsp;", " ");
+        }
+
+        /// <summary>
+        ///     Removes '' from article
+        /// </summary>
+        /// <param name="article"></param>
+        /// <returns>article without ''</returns>
+        private static string RemoveApostrophe(string article) {
+            return article.Replace("''", string.Empty);
+        }
+
+        private static string RemoveDoubleCurlyBrackets(string article) {
+            if (article.Contains("{{") && article.Contains("}}")) {
+                var indexFrom = 0;
+                var indexTo = 0;
+                while (indexFrom != -1 && indexTo != -1 && indexTo < article.Length) {
+                    indexFrom = article.IndexOf("{{", indexFrom + "{{".Length, StringComparison.Ordinal);
+                    indexTo = article.IndexOf("}}", indexFrom, StringComparison.Ordinal);
+                    var res = indexFrom != -1 && indexTo != -1
+                        ? article.Substring(indexFrom, indexTo - indexFrom)
+                        : string.Empty;
+
+                    if (!string.IsNullOrEmpty(res)) {
+                        article = res.Contains("IPA") ? article.Replace(res, "?") : article.Replace(res, " ");
+                    }
+                }
+
+                return article.Replace("{{", string.Empty).Replace("}}", string.Empty);
+            }
+
+            return article;
+        }
+
+        /// <summary>
+        ///     Adds link to Wikipedia page for article
+        /// </summary>
+        /// <param name="article"></param>
+        /// <returns>article with link</returns>
+        private static string AddArticleAdress(string article) {
+            var wikipediaArticleAddress =
+                string.Format("Aby dowiedzieć się więcej:{0}https://pl.wikipedia.org/wiki/{1}",
+                    Environment.NewLine,
+                    WikiApi.Word);
+            return article + wikipediaArticleAddress;
         }
     }
-
 }
